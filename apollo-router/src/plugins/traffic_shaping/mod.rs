@@ -70,6 +70,17 @@ struct Shaping {
     experimental_http2: Option<Http2Config>,
     /// DNS resolution strategy for subgraphs
     dns_resolution_strategy: Option<DnsResolutionStrategy>,
+    /// Keep-alive duration for subgraphs
+    #[serde(
+        deserialize_with = "humantime_serde::deserialize",
+        default = "default_keepalive_duration"
+    )]
+    #[schemars(with = "String", default)]
+    keepalive_duration: Option<Duration>,
+}
+
+fn default_keepalive_duration() -> Option<Duration> {
+    Some(Duration::from_secs(30))
 }
 
 #[derive(PartialEq, Default, Debug, Clone, Deserialize, JsonSchema)]
@@ -107,6 +118,7 @@ impl Merge for Shaping {
                     .as_ref()
                     .or(fallback.dns_resolution_strategy.as_ref())
                     .cloned(),
+                keepalive_duration: self.keepalive_duration.or(fallback.keepalive_duration),
             },
         }
     }
@@ -405,6 +417,7 @@ impl TrafficShaping {
         .map(|config| crate::configuration::shared::Client {
             experimental_http2: config.shaping.experimental_http2,
             dns_resolution_strategy: config.shaping.dns_resolution_strategy,
+            keepalive_duration: config.shaping.keepalive_duration,
         })
         .unwrap_or_default()
     }
@@ -708,13 +721,16 @@ mod test {
         all:
           experimental_http2: disable
           dns_resolution_strategy: ipv6_only
+          keepalive_duration: 60s
         subgraphs: 
           products:
             experimental_http2: enable
             dns_resolution_strategy: ipv6_then_ipv4
+            keepalive_duration: 30s
           reviews:
             experimental_http2: disable
             dns_resolution_strategy: ipv4_only
+            keepalive_duration: 20s
         router:
           timeout: 65s
         "#,
@@ -730,6 +746,7 @@ mod test {
             crate::configuration::shared::Client {
                 experimental_http2: Some(Http2Config::Enable),
                 dns_resolution_strategy: Some(DnsResolutionStrategy::Ipv6ThenIpv4),
+                keepalive_duration: Some(Duration::from_secs(30)),
             },
         );
         assert_eq!(
@@ -737,6 +754,7 @@ mod test {
             crate::configuration::shared::Client {
                 experimental_http2: Some(Http2Config::Disable),
                 dns_resolution_strategy: Some(DnsResolutionStrategy::Ipv4Only),
+                keepalive_duration: Some(Duration::from_secs(20)),
             },
         );
         assert_eq!(
@@ -744,6 +762,7 @@ mod test {
             crate::configuration::shared::Client {
                 experimental_http2: Some(Http2Config::Disable),
                 dns_resolution_strategy: Some(DnsResolutionStrategy::Ipv6Only),
+                keepalive_duration: Some(Duration::from_secs(60)),
             },
         );
     }

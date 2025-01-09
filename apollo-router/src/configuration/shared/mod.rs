@@ -1,3 +1,5 @@
+use std::time::Duration;
+
 use schemars::JsonSchema;
 use serde::Deserialize;
 
@@ -8,6 +10,7 @@ use crate::plugins::traffic_shaping::Http2Config;
 pub(crate) struct Client {
     pub(crate) experimental_http2: Option<Http2Config>,
     pub(crate) dns_resolution_strategy: Option<DnsResolutionStrategy>,
+    pub(crate) keepalive_duration: Option<Duration>,
 }
 
 #[derive(PartialEq, Default, Debug, Clone, Copy, Deserialize, JsonSchema)]

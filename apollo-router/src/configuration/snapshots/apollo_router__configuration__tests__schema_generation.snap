@@ -1,5 +1,6 @@
 ---
 source: apollo-router/src/configuration/tests.rs
+assertion_line: 26
 expression: "&schema"
 ---
 {
@@ -538,6 +539,11 @@ expression: "&schema"
         "experimental_http2": {
           "$ref": "#/definitions/Http2Config",
           "description": "#/definitions/Http2Config",
+          "nullable": true
+        },
+        "keepalive_duration": {
+          "$ref": "#/definitions/Duration",
+          "description": "#/definitions/Duration",
           "nullable": true
         }
       },
@@ -2209,6 +2215,25 @@ expression: "&schema"
           "type": "string"
         }
       ]
+    },
+    "Duration": {
+      "properties": {
+        "nanos": {
+          "format": "uint32",
+          "minimum": 0.0,
+          "type": "integer"
+        },
+        "secs": {
+          "format": "uint64",
+          "minimum": 0.0,
+          "type": "integer"
+        }
+      },
+      "required": [
+        "nanos",
+        "secs"
+      ],
+      "type": "object"
     },
     "Enabled": {
       "enum": [
@@ -6422,6 +6447,11 @@ expression: "&schema"
           "$ref": "#/definitions/RateLimitConf",
           "description": "#/definitions/RateLimitConf",
           "nullable": true
+        },
+        "keepalive_duration": {
+          "default": null,
+          "description": "Keep-alive duration for subgraphs",
+          "type": "string"
         },
         "timeout": {
           "default": null,

@@ -142,7 +142,7 @@ impl HttpClientService {
         let mut http_connector =
             new_async_http_connector(client_config.dns_resolution_strategy.unwrap_or_default())?;
         http_connector.set_nodelay(true);
-        http_connector.set_keepalive(Some(std::time::Duration::from_secs(60)));
+        http_connector.set_keepalive(client_config.keepalive_duration);
         http_connector.enforce_http(false);
 
         let builder = hyper_rustls::HttpsConnectorBuilder::new()
